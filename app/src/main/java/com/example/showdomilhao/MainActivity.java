@@ -1,11 +1,11 @@
 package com.example.showdomilhao;
 
-
-import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.appcompat.app.AppCompatDialogFragment;
 
-
+import android.app.Application;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,13 +18,10 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.showdomilhao.model.Questao;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     int rodada;
     Animation some;
     Animation aparece;
+    int pontuacao;
 
 
     @Override
@@ -70,13 +68,16 @@ public class MainActivity extends AppCompatActivity {
         confirmar = findViewById(R.id.btn_confirma);
         txtTitulo = findViewById(R.id.txtTitulo);
         txtPergunta = findViewById(R.id.txtPergunta);
+        invisibleView();
+        pontuacao = 0;
+
 
 
         some = new AlphaAnimation(1, 0);
         aparece = new AlphaAnimation(0, 1);
 
 
-        some.setDuration(4000);
+        some.setDuration(1000);
         aparece.setDuration(1000);
 
         questoes = new ArrayList<>();
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         resposta = 0;
         rodada = 0;
         confirmar.setEnabled(false);
-        invisibleView();
+
 
 
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -123,13 +124,13 @@ public class MainActivity extends AppCompatActivity {
                 if (resposta != 0) {
 
                     if (resposta == questao.getCorreta()) {
-                        Toast.makeText(MainActivity.this, "Acertou!", Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(MainActivity.this, "Acertou! +1 Ponto", Toast.LENGTH_SHORT).show();
+                        pontuacao++;
                         rodada += 1;
                         desapareceView();
-                        atualizaView(rodada);
                         radioGroup.clearCheck();
                         confirmar.setEnabled(false);
+                        atualizaView(rodada);
 
                     } else {
                         Toast.makeText(MainActivity.this, "Errou!", Toast.LENGTH_SHORT).show();
@@ -191,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            desapareceView();
+
 
             progressBar.setVisibility(View.VISIBLE);
         }
@@ -276,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             apareceView();
 
         } else {
-            Toast.makeText(MainActivity.this, "Fim!", Toast.LENGTH_SHORT).show();
+            criaAlerta();
         }
 
 
@@ -301,9 +302,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void invisibleView() {
-        txtPergunta.setVisibility(View.GONE);
-        txtTitulo.setVisibility(View.GONE);
-        radioGroup.setVisibility(View.GONE);
+        txtPergunta.setVisibility(View.INVISIBLE);
+        txtTitulo.setVisibility(View.INVISIBLE);
+        radioGroup.setVisibility(View.INVISIBLE);
+    }
+    void criaAlerta(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+        builder.setTitle("Fim de Jogo");
+        builder.setMessage("Você marcou "+pontuacao+" Pontos!");
+        builder.setIcon(R.drawable.bau_de_ouro);
+        builder.setPositiveButton("Jogar Novamente", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                pontuacao = 0;
+                rodada = 0;
+                atualizaView(rodada);
+            }
+        });
+        builder.setCancelable(false);
+        builder.create().show();
     }
 }
 
